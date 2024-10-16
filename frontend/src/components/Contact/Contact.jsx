@@ -167,7 +167,7 @@ const Contact = () => {
                                         </button>
                                     </Link>
                                     <span className="dark:text-white mb-2 text-xl"> / </span>
-                                    <Link to="/singup">
+                                    <Link to="/signup">
                                         <button className="md:w-32 mb-5 bg-violet-700 shadow-xl text-white font-bold p-2 rounded-xl mt-3 hover:bg-violet-800 transition ease-in-out duration-300">
                                             Signup
                                         </button>
