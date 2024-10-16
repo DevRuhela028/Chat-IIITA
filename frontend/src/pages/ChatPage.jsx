@@ -35,7 +35,7 @@ const ChatPage = () => {
     
             try {
                 // Make the POST request to your backend
-                const response = await axios.post("http://localhost:8000/chat", {
+                const response = await axios.post("https://huggingface.co/spaces/DevRuhela/Chat-IIITA-Python/api/chat", {
                     input: userInput,
                 });
     
@@ -89,47 +89,47 @@ const ChatPage = () => {
     }, [messages]);
     
     const handleSend = async (e) => {
-        
-        e.preventDefault();
-        
-        if (input.trim()) {
-            // Display user message
-            setMessages([...messages, { text: input, sender: "user" }]);
-            setInput("");  // Clear input field
-            setLoading(true);  // Show loading animation
-    
-            try {
-                // Make the POST request to your backend
-                const response = await axios.post("http://localhost:8000/chat", {
-                    input: input,
-                });
-    
-                console.log("Backend response:", response.data);  // Debugging log
-    
-                // Extract the result from the response
-                const aiResponse = response.data.answer.result;
-    
-                if (aiResponse) {
-                    // Add AI response to the messages list
-                    setMessages((prevMessages) => [
-                        ...prevMessages,
-                        { text: "", sender: "ai", typing: true },  // Typing effect
-                    ]);
-                    simulateTypewriterEffect(aiResponse);  // Show typewriter effect
-                } else {
-                    throw new Error("Invalid response structure");
-                }
-            } catch (error) {
-                console.error("Error fetching AI response:", error);
+    e.preventDefault();
+
+    if (input.trim()) {
+        // Display user message
+        setMessages([...messages, { text: input, sender: "user" }]);
+        setInput("");  // Clear input field
+        setLoading(true);  // Show loading animation
+
+        try {
+            // Make the POST request to your Hugging Face backend
+            const response = await axios.post("https://huggingface.co/spaces/DevRuhela/Chat-IIITA-Python/api/chat", {
+                text: input,  // Adjusted to match your FastAPI request model
+            });
+
+            console.log("Backend response:", response.data);  // Debugging log
+
+            // Extract the result from the response
+            const aiResponse = response.data.answer;
+
+            if (aiResponse) {
+                // Add AI response to the messages list
                 setMessages((prevMessages) => [
                     ...prevMessages,
-                    { text: "Error fetching AI response. Please try again later.", sender: "ai" },
+                    { text: "", sender: "ai", typing: true },  // Typing effect
                 ]);
-            } finally {
-                setLoading(false);  // Remove loading animation
+                simulateTypewriterEffect(aiResponse);  // Show typewriter effect
+            } else {
+                throw new Error("Invalid response structure");
             }
+        } catch (error) {
+            console.error("Error fetching AI response:", error);
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { text: "Error fetching AI response. Please try again later.", sender: "ai" },
+            ]);
+        } finally {
+            setLoading(false);  // Remove loading animation
         }
-    };
+    }
+};
+
     
     
 
