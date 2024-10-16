@@ -5,6 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Input from "../components/Input";
 import { Lock } from "lucide-react";
 import toast from "react-hot-toast";
+import FloatingShape from "../components/FloatingShape";
+
 
 const ResetPasswordPage = () => {
 	const [password, setPassword] = useState("");
