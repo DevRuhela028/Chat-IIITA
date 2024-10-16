@@ -77,16 +77,16 @@ const ChatPage = () => {
         }
 	};
 
-    useEffect(() => {
-        // Load messages from local storage when the component mounts
-        const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
-        setMessages(savedMessages);
-    }, []);
+    // useEffect(() => {
+    //     // Load messages from local storage when the component mounts
+    //     const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+    //     setMessages(savedMessages);
+    // }, []);
 
-    useEffect(() => {
-        // Save messages to local storage whenever they change
-        localStorage.setItem("chatMessages", JSON.stringify(messages));
-    }, [messages]);
+    // useEffect(() => {
+    //     // Save messages to local storage whenever they change
+    //     localStorage.setItem("chatMessages", JSON.stringify(messages));
+    // }, [messages]);
     
     const handleSend = async (e) => {
     e.preventDefault();
