@@ -16,7 +16,7 @@ const ChatPage = () => {
     const [loading, setLoading] = useState(false);
     const { user  ,logout} = useAuthStore();
     const [iscomp,setIscomp] = useState(true)
-
+    const [chatHistory, setChatHistory] = useState([]);
  
 
     const clickbutton = async (e) => {
@@ -35,7 +35,7 @@ const ChatPage = () => {
     
             try {
                 // Make the POST request to your backend
-                const response = await axios.post("https://huggingface.co/spaces/DevRuhela/Chat-IIITA-Python/api/chat", {
+                const response = await axios.post("http://localhost:8000/chat", {
                     input: userInput,
                 });
     
@@ -65,7 +65,19 @@ const ChatPage = () => {
             }
         }
     };
+
+    const startNewChat = () => {
+        const updatedHistory = [{ messages }, ...chatHistory]; // Add new chat to the start
     
+        // Limit the history to the latest 5 chats (FIFO)
+        if (updatedHistory.length > 5) {
+            updatedHistory.pop(); // Remove the oldest chat (last element)
+        }
+    
+        setChatHistory(updatedHistory); // Update the chat history state
+        setMessages([]); // Reset messages for the new chat
+    };
+
     const handleLogout = () => {
 		try{
             logout();
@@ -77,62 +89,67 @@ const ChatPage = () => {
         }
 	};
 
-    // useEffect(() => {
-    //     // Load messages from local storage when the component mounts
-    //     const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
-    //     setMessages(savedMessages);
-    // }, []);
-
-    // useEffect(() => {
-    //     // Save messages to local storage whenever they change
-    //     localStorage.setItem("chatMessages", JSON.stringify(messages));
-    // }, [messages]);
+    useEffect(() => {
+        const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+        setMessages(savedMessages);
+        
+        const savedHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+        setChatHistory(savedHistory);
+    }, []);
+    
+    // Save to localStorage whenever messages or chatHistory change
+    useEffect(() => {
+        localStorage.setItem("chatMessages", JSON.stringify(messages));
+        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+    }, [messages, chatHistory]);
+    
     
     const handleSend = async (e) => {
-    e.preventDefault();
-
-    if (input.trim()) {
-        // Display user message
-        setMessages([...messages, { text: input, sender: "user" }]);
-        setInput("");  // Clear input field
-        setLoading(true);  // Show loading animation
-
-        try {
-            // Make the POST request to your Hugging Face backend
-            const response = await axios.post("https://huggingface.co/spaces/DevRuhela/Chat-IIITA-Python/api/chat", {
-                text: input,  // Adjusted to match your FastAPI request model
-            });
-
-            console.log("Backend response:", response.data);  // Debugging log
-
-            // Extract the result from the response
-            const aiResponse = response.data.answer;
-
-            if (aiResponse) {
-                // Add AI response to the messages list
+        
+        e.preventDefault();
+        
+        if (input.trim()) {
+            // Display user message
+            setMessages([...messages, { text: input, sender: "user" }]);
+            setInput("");  // Clear input field
+            setLoading(true);  // Show loading animation
+    
+            try {
+                // Make the POST request to your backend
+                const response = await axios.post("http://localhost:8000/chat", {
+                    input: input,
+                });
+    
+                console.log("Backend response:", response.data);  // Debugging log
+    
+                // Extract the result from the response
+                const aiResponse = response.data.answer.result;
+    
+                if (aiResponse) {
+                    // Add AI response to the messages list
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        { text: "", sender: "ai", typing: true },  // Typing effect
+                    ]);
+                    simulateTypewriterEffect(aiResponse);  // Show typewriter effect
+                } else {
+                    throw new Error("Invalid response structure");
+                }
+            } catch (error) {
+                console.error("Error fetching AI response:", error);
                 setMessages((prevMessages) => [
                     ...prevMessages,
-                    { text: "", sender: "ai", typing: true },  // Typing effect
+                    { text: "Error fetching AI response. Please try again later.", sender: "ai" },
                 ]);
-                simulateTypewriterEffect(aiResponse);  // Show typewriter effect
-            } else {
-                throw new Error("Invalid response structure");
+            } finally {
+                setLoading(false);  // Remove loading animation
             }
-        } catch (error) {
-            console.error("Error fetching AI response:", error);
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { text: "Error fetching AI response. Please try again later.", sender: "ai" },
-            ]);
-        } finally {
-            setLoading(false);  // Remove loading animation
         }
-    }
-};
-
-    
-    
-
+    };
+    const deleteChat = (index) => {
+        const updatedHistory = chatHistory.filter((_, i) => i !== index);  // Remove the selected chat
+        setChatHistory(updatedHistory);
+    };
     // Simulate typewriter effect
     const simulateTypewriterEffect = (fullText) => {
         setIscomp(false)
@@ -180,23 +197,64 @@ const ChatPage = () => {
     <svg 
     xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-message-square"><path d="M12 6V2H8"/><path d="m8 18-4 4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z"/><path d="M2 12h2"/><path d="M9 11v2"/><path d="M15 11v2"/><path d="M20 12h2"/>
     </svg>
+    <Link
+    to="/"
+    >
     <h1 className="text-4xl bg-gradient-to-r from-blue-500 via-purple-500 to-violet-500 bg-clip-text text-transparent font-medium">Chat-IIITA</h1>
+
+    </Link>
     
     </div>
     <div className="p-8 pl-4">
-    
-        <h2 className="text-xl font-light mb-4 dark:text-white text-black ">Quick Links</h2>
-        <ul className="space-y-4">
-            <li>
-                <Link
-                    to="/"
-                    className="flex items-center text-black dark:text-white border-violet-100 space-x-2  dark:hover:bg-gray-700 p-2 rounded-lg transition-colors hover:bg-violet-50 dark:border-0"
+        <div className="flex gap-3 items-center">
+
+            <h2 className="text-xl font-light  dark:text-white text-black ">New Chat</h2>
+                <motion.button
+                    whileHover={{scale:1.05}}
+                    whileTap={{scale:0.95}}
+                    className="p-1 bg-gradient-to-t from-blue-500  to-purple-500 flex items-center rounded-full"
+                    onClick={startNewChat}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                    <span>Home</span>
-                </Link>
-            </li>      
-        </ul>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                </motion.button>
+        </div>
+            <div className="mt-2">
+                <ul className="space-y-2">
+                    {chatHistory.map((chat, index) => (
+                        <li key={index}
+                            >
+                            <div
+                                
+                                className="p-2 flex justify-between w-full bg-violet-200 text-black dark:text-white rounded  dark:bg-gray-700"
+                            >
+                                Chat {chatHistory.length - index}
+                                <div className="flex gap-2 justify-end">
+                                    <motion.button
+                                        whileHover={{scale:1.06}}
+                                        whileTap={{scale:0.95}}
+                                        onClick={() => deleteChat(index)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{scale:1.06}}
+                                        whileTap={{scale:0.95}}
+                                        onClick={() => setMessages(chat.messages)}
+                                    >
+                                        
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+                
+            
+        
+        
             
         <h2 className="text-xl font-light mb-4 mt-4 dark:text-white text-black border-t border-black dark:border-gray-400 pt-3">Important Links</h2>
         <ul className="space-y-1">
@@ -260,7 +318,7 @@ const ChatPage = () => {
             <li>
                 <Link
                     target="blank"
-                    to="https://profile.iiita.ac.in/seemak/Teaching.php"
+                    to=" https://profile.iiita.ac.in/seemak/Teaching.php "
                     className="flex items-center font-medium text-blue-500 hover:text-blue-600 dark:text-blue-300 p-2 dark:hover:text-blue-400 gap-2"
                 >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
@@ -280,12 +338,13 @@ const ChatPage = () => {
                 </Link>
             </li>
         </ul>
-        <h2 className="text-xl font-light mb-4 mt-4 dark:text-white text-black border-t border-black dark:border-gray-400 pt-3">Notes and PYQs</h2>
+        <h2 className="text-xl fo
+        nt-light mb-4 mt-4 dark:text-white text-black border-t border-black dark:border-gray-400 pt-3">Notes and PYQs</h2>
         <ul className="space-y-1 ">
             <li>
                 <Link
                     target="blank"
-                    to="https://profile.iiita.ac.in/srdubey/teaching.php"
+                    to=" https://profile.iiita.ac.in/srdubey/teaching.php"
                     className="flex items-center font-medium text-blue-500 hover:text-blue-600 dark:text-blue-300 p-2 dark:hover:text-blue-400 gap-2"
                 >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
@@ -296,7 +355,7 @@ const ChatPage = () => {
             <li>
                 <Link
                     target="blank"
-                    to="https://profile.iiita.ac.in/seemak/Teaching.php"
+                    to=" https://profile.iiita.ac.in/seemak/Teaching.php"
                     className="flex items-center font-medium text-blue-500 hover:text-blue-600 dark:text-blue-300 p-2 dark:hover:text-blue-400 gap-2"
                 >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
