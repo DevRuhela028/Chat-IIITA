@@ -35,7 +35,7 @@ const ChatPage = () => {
     
             try {
                 // Make the POST request to your backend
-                const response = await axios.post('https://huggingface.co/spaces/DevRuhela/Chat-IIITA-Python/chat', {
+                const response = await axios.post('https://python-backend-1.onrender.com/chat', {
                     input: userInput,
                 });
     
@@ -116,7 +116,7 @@ const ChatPage = () => {
     
             try {
                 // Make the POST request to your backend
-                const response = await axios.post('https://huggingface.co/spaces/DevRuhela/Chat-IIITA-Python/chat', {
+                const response = await axios.post('https://python-backend-1.onrender.com/chat', {
                     input: input,
                 });
     
