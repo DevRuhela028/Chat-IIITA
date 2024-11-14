@@ -20,51 +20,52 @@ const ChatPage = () => {
  
 
     const clickbutton = async (e) => {
-        const userInput = e;  // 'e' is the input string
-    
-        console.log("before");
-        console.log("input:", userInput);
-    
-        if (userInput.trim()) {
-            console.log("after");
-    
-            // Display user message
-            setMessages([...messages, { text: userInput, sender: "user" }]);
-            setInput("");  // Clear input field
-            setLoading(true);  // Show loading animation
-    
-            try {
-                // Make the POST request to your backend
-                const response = await axios.post('https://python-backend-0wjc.onrender.com/chat', {
-                    input: userInput,
-                });
-    
-                console.log("Backend response:", response.data);  // Debugging log
-    
-                // Extract the result from the response
-                const aiResponse = response.data.answer.result;
-    
-                if (aiResponse) {
-                    // Add AI response to the messages list
-                    setMessages((prevMessages) => [
-                        ...prevMessages,
-                        { text: "", sender: "ai", typing: true },  // Typing effect
-                    ]);
-                    simulateTypewriterEffect(aiResponse);  // Show typewriter effect
-                } else {
-                    throw new Error("Invalid response structure");
-                }
-            } catch (error) {
-                console.error("Error fetching AI response:", error);
+    const userInput = e;  // 'e' is the input string
+
+    console.log("before");
+    console.log("input:", userInput);
+
+    if (userInput.trim()) {
+        console.log("after");
+
+        // Display user message
+        setMessages([...messages, { text: userInput, sender: "user" }]);
+        setInput("");  // Clear input field
+        setLoading(true);  // Show loading animation
+
+        try {
+            // Make the POST request to your backend
+            const response = await axios.post('https://python-backend-0wjc.onrender.com/chat', {
+                question: userInput,  // Update to match backend's expected format
+            });
+
+            console.log("Backend response:", response.data);  // Debugging log
+
+            // Extract the answer directly from the response
+            const aiResponse = response.data.answer;
+
+            if (aiResponse) {
+                // Add AI response to the messages list
                 setMessages((prevMessages) => [
                     ...prevMessages,
-                    { text: "Error fetching AI response. Please try again later.", sender: "ai" },
+                    { text: "", sender: "ai", typing: true },  // Typing effect
                 ]);
-            } finally {
-                setLoading(false);  // Remove loading animation
+                simulateTypewriterEffect(aiResponse);  // Show typewriter effect
+            } else {
+                throw new Error("Invalid response structure");
             }
+        } catch (error) {
+            console.error("Error fetching AI response:", error);
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { text: "Error fetching AI response. Please try again later.", sender: "ai" },
+            ]);
+        } finally {
+            setLoading(false);  // Remove loading animation
         }
-    };
+    }
+};
+
 
     const startNewChat = () => {
         const updatedHistory = [{ messages }, ...chatHistory]; // Add new chat to the start
@@ -104,48 +105,51 @@ const ChatPage = () => {
     }, [messages, chatHistory]);
     
     
-    const handleSend = async (e) => {
-        
-        e.preventDefault();
-        
-        if (input.trim()) {
-            // Display user message
-            setMessages([...messages, { text: input, sender: "user" }]);
-            setInput("");  // Clear input field
-            setLoading(true);  // Show loading animation
+    import axios from 'axios';
+import { useState } from 'react';
+
+const handleSend = async (e) => {
+    e.preventDefault();
     
-            try {
-                // Make the POST request to your backend
-                const response = await axios.post('https://python-backend-0wjc.onrender.com/chat', {
-                    input: input,
-                });
+    if (input.trim()) {
+        // Display user message
+        setMessages([...messages, { text: input, sender: "user" }]);
+        setInput("");  // Clear input field
+        setLoading(true);  // Show loading animation
+
+        try {
+            // Make the POST request to your backend
+            const response = await axios.post('https://python-backend-0wjc.onrender.com/chat', {
+                question: input,  // Update to match backend's expected format
+            });
     
-                console.log("Backend response:", response.data);  // Debugging log
+            console.log("Backend response:", response.data);  // Debugging log
     
-                // Extract the result from the response
-                const aiResponse = response.data.answer.result;
+            // Extract the answer from the response
+            const aiResponse = response.data.answer;
     
-                if (aiResponse) {
-                    // Add AI response to the messages list
-                    setMessages((prevMessages) => [
-                        ...prevMessages,
-                        { text: "", sender: "ai", typing: true },  // Typing effect
-                    ]);
-                    simulateTypewriterEffect(aiResponse);  // Show typewriter effect
-                } else {
-                    throw new Error("Invalid response structure");
-                }
-            } catch (error) {
-                console.error("Error fetching AI response:", error);
+            if (aiResponse) {
+                // Add AI response to the messages list
                 setMessages((prevMessages) => [
                     ...prevMessages,
-                    { text: "Error fetching AI response. Please try again later.", sender: "ai" },
+                    { text: "", sender: "ai", typing: true },  // Typing effect
                 ]);
-            } finally {
-                setLoading(false);  // Remove loading animation
+                simulateTypewriterEffect(aiResponse);  // Show typewriter effect
+            } else {
+                throw new Error("Invalid response structure");
             }
+        } catch (error) {
+            console.error("Error fetching AI response:", error);
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { text: "Error fetching AI response. Please try again later.", sender: "ai" },
+            ]);
+        } finally {
+            setLoading(false);  // Remove loading animation
         }
-    };
+    }
+};
+
     const deleteChat = (index) => {
         const updatedHistory = chatHistory.filter((_, i) => i !== index);  // Remove the selected chat
         setChatHistory(updatedHistory);
