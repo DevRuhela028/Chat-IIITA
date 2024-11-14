@@ -105,8 +105,7 @@ const ChatPage = () => {
     }, [messages, chatHistory]);
     
     
-    import axios from 'axios';
-import { useState } from 'react';
+
 
 const handleSend = async (e) => {
     e.preventDefault();
