@@ -35,7 +35,7 @@ const ChatPage = () => {
 
         try {
             // Make the POST request to your backend
-            const response = await axios.post('https://python-backend-0wjc.onrender.com/chat', {
+            const response = await axios.post('https://python-backend-production-0b24.up.railway.app/chat', {
                 question: userInput,  // Update to match backend's expected format
             });
 
@@ -118,7 +118,7 @@ const handleSend = async (e) => {
 
         try {
             // Make the POST request to your backend
-            const response = await axios.post('https://python-backend-0wjc.onrender.com/chat', {
+            const response = await axios.post('https://python-backend-production-0b24.up.railway.app/chat', {
                 question: input,  // Update to match backend's expected format
             });
     
