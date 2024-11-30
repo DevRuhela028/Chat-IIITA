@@ -31,15 +31,19 @@ export const sendVerificationEmail = async (email, token) => {
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const googleAuth = async (req, res) => {
-    const { token } = req.body; // Get the token from the request body
+    const { code } = req.body; // Extract the authorization code from the request body
 
     try {
-        const ticket = await client.verifyIdToken({
-            idToken: token, // Verify the ID token
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload(); // Get the payload from the verified token
+        // Exchange the authorization code for tokens
+        const { tokens } = await client.getToken(code);
 
+        // Verify the ID token with the OAuth2 client
+        const ticket = await client.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: process.env.GOOGLE_CLIENT_ID, // Ensure this matches your client ID
+        });
+
+        const payload = ticket.getPayload(); // Get the payload from the verified ID token
         const { email, name, sub: googleId } = payload;
 
         // Find the user in your database
@@ -54,22 +58,21 @@ export const googleAuth = async (req, res) => {
                 isVerified: true, // Set email as verified
             });
         } else {
-            // If the user exists, update any relevant fields if necessary
+            // If the user exists, update relevant fields if necessary
             user.googleId = googleId; // Update Google ID if it's changed
             await user.save();
         }
 
-        // Generate token and set cookie
-        generateTokenAndSetCookie(res, user._id, googleId); // Use user._id for the user ID
+        // Generate token and set cookie (you can keep your existing token generation logic)
+        generateTokenAndSetCookie(res, user._id, googleId);
 
-        // Respond with the user data if needed
+        // Respond with the user data (you can send more details if needed)
         res.status(200).json({ user: { email, name, googleId } });
     } catch (error) {
         console.error("Error verifying Google token:", error);
         res.status(403).json({ message: "Failed to authenticate with Google" });
     }
 };
-
 
 
 
