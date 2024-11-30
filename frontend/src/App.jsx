@@ -73,7 +73,7 @@ function App() {
 	if (isCheckingAuth) return <LoadingSpinner />;
 
 	return (
-		<GoogleOAuthProvider clientId="136538803160-u1db190rnb7l7jfdvh6rf83hjna62ibn.apps.googleusercontent.com">
+		<GoogleOAuthProvider clientId="136538803160-7u1casbi8cok2rg9mndkmpm6bo08mup2.apps.googleusercontent.com">
 			<Toaster />
 			<ThemeProvider value={{ themeMode, darkTheme, lightTheme }}>
 				<Routes>
