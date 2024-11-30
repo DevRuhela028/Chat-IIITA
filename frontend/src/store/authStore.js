@@ -71,7 +71,7 @@ export const useAuthStore = create((set) => ({
 		set({ isLoading: true, error: null });
 		try {
 			// Use the idToken to authenticate the user
-			const response = await axios.post(`${API_URL}/googleAuth`, {
+			const response = await axios.post(`https://chat-iiita-ultimate-techparent.onrender.com/auth/googleAuth`, {
 				token: idToken, // Pass the idToken correctly
 			});
 	
