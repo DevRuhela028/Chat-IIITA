@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:3000/api/auth"
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:3000/api/auth" : "/api/auth";
 const EditProfileForm = ({ user, setEditMode }) => {
 	const [name, setName] = useState(user.name);
 	const [email, setEmail] = useState(user.email);
