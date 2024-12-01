@@ -25,7 +25,7 @@ const ChatPage = () => {
     const [showTranscription , setShowTranscription] = useState(false);
     const [generating , setGenerating] = useState(false)
     // Ref to store mediaRecorder object
-
+    const BACKEND_URL = process.env.BACKEND;
  
     const mediaRecorderRef = useRef(null);
   
@@ -111,7 +111,7 @@ const ChatPage = () => {
     
             try {
                 // Make the POST request to your backend
-                const response = await axios.post("https://python-backend-production-0b24.up.railway.app/chat", {
+                const response = await axios.post(`${BACKEND_URL}/chat`, {
                     question: userInput,  // Ensure this matches the backend structure
                 });
     
@@ -189,7 +189,7 @@ const ChatPage = () => {
     
             try {
                 // Send the question to the FastAPI backend
-                const response = await axios.post("https://python-backend-production-0b24.up.railway.app/chat", {  question : input });
+                const response = await axios.post(`${BACKEND_URL}/chat`, {  question : input });
                 
                 // Extract the AI's answer from the response
                 const aiResponse = response.data.answer;
