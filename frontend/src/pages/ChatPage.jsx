@@ -25,7 +25,6 @@ const ChatPage = () => {
     const [showTranscription , setShowTranscription] = useState(false);
     const [generating , setGenerating] = useState(false)
     // Ref to store mediaRecorder object
-    const BACKEND_URL = process.env.BACKEND;
  
     const mediaRecorderRef = useRef(null);
   
@@ -111,7 +110,7 @@ const ChatPage = () => {
     
             try {
                 // Make the POST request to your backend
-                const response = await axios.post(`${BACKEND_URL}/chat`, {
+                const response = await axios.post("https://python-backend-production-0b24.up.railway.app/chat", {
                     question: userInput,  // Ensure this matches the backend structure
                 });
     
@@ -189,7 +188,7 @@ const ChatPage = () => {
     
             try {
                 // Send the question to the FastAPI backend
-                const response = await axios.post(`${BACKEND_URL}/chat`, {  question : input });
+                const response = await axios.post("https://python-backend-production-0b24.up.railway.app/chat", {  question : input });
                 
                 // Extract the AI's answer from the response
                 const aiResponse = response.data.answer;
@@ -376,22 +375,28 @@ const ChatPage = () => {
                 <ul className="space-y-2">
                     {chatHistory.map((chat, index) => (
                         <li key={chat.timestamp || index}>
-                            <div className="p-2 flex justify-between w-full bg-violet-200 text-black dark:text-white rounded dark:bg-gray-700">
-                                Chat {chatHistory.length - index} (Saved at: {new Date(chat.timestamp).toLocaleString()})
-                                <div className="flex gap-2 justify-end">
+                            <div className="p-1 px-2 flex justify-between w-full bg-violet-200 text-gray-700  dark:text-white rounded-2xl dark:bg-gray-700 dark:hover:bg-gray-600 hover:bg-violet-300"
+                                onClick={() => {handleChatSelection}}
+                            >
+                                <div className="flex flex-col">
+                                 <span className="text-md font-bold">Chat {chatHistory.length - index}</span>
+                                 <span className="text-xs">Saved at: {new Date(chat.timestamp).toLocaleString()}</span>
+                                </div>
+                                
+                                <div className="flex gap-2 justify-end pl-10">
                                     <motion.button
                                         whileHover={{ scale: 1.06 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => deleteChat(index)}
                                     >
-                                        <Trash />
+                                        <Trash className="h-5 w-5"/>
                                     </motion.button>
                                     <motion.button
                                         whileHover={{ scale: 1.06 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => handleChatSelection(chat)}
                                     >
-                                        <Rocket />
+                                        <Rocket className="h-5 w-5"/>
                                     </motion.button>
                                 </div>
                             </div>
