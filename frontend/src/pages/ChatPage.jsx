@@ -111,7 +111,7 @@ const ChatPage = () => {
     
             try {
                 // Make the POST request to your backend
-                const response = await axios.post("https://python-backend-production-0b24.up.railway.app/chat", {
+                const response = await axios.post("http://localhost:8000/chat", {
                     question: userInput,  // Ensure this matches the backend structure
                 });
     
@@ -139,18 +139,20 @@ const ChatPage = () => {
         }
     };
     
-    const handleChatSelection = (chat) => {
-        setMessages(chat.messages);
+    const handleChatSelection = (selectedChat) => {
+        setMessages(selectedChat.messages);
     };
     const startNewChat = () => {
-        const updatedHistory = [{ messages }, ...chatHistory];
-
+        const newChat = { messages, timestamp: Date.now() };
+        const updatedHistory = [newChat, ...chatHistory];
+    
         if (updatedHistory.length > 5) {
-            updatedHistory.pop();  // Keep only the latest 5 chats
+            updatedHistory.pop();
         }
-
+    
         setChatHistory(updatedHistory);
-        setMessages([]);  // Clear the current messages for the new chat
+        setMessages([]);
+        localStorage.setItem("chatHistory", JSON.stringify(updatedHistory));
     };
 
     const handleLogout = () => {
@@ -174,11 +176,6 @@ const ChatPage = () => {
         setChatHistory(limitedHistory);
     }, []);
 
-    useEffect(() => {
-        // Save to localStorage whenever messages or chatHistory change
-        localStorage.setItem("chatMessages", JSON.stringify(messages));
-        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-    }, [messages, chatHistory]);
 
     const handleSend = async (e) => {
         e.preventDefault();
@@ -192,7 +189,7 @@ const ChatPage = () => {
     
             try {
                 // Send the question to the FastAPI backend
-                const response = await axios.post("https://python-backend-production-0b24.up.railway.app/chat", {  question : input });
+                const response = await axios.post("http://localhost:8000/chat", {  question : input });
                 
                 // Extract the AI's answer from the response
                 const aiResponse = response.data.answer;
@@ -378,9 +375,9 @@ const ChatPage = () => {
              <div className="mt-2">
                 <ul className="space-y-2">
                     {chatHistory.map((chat, index) => (
-                        <li key={index}>
+                        <li key={chat.timestamp || index}>
                             <div className="p-2 flex justify-between w-full bg-violet-200 text-black dark:text-white rounded dark:bg-gray-700">
-                                Chat {chatHistory.length - index}
+                                Chat {chatHistory.length - index} (Saved at: {new Date(chat.timestamp).toLocaleString()})
                                 <div className="flex gap-2 justify-end">
                                     <motion.button
                                         whileHover={{ scale: 1.06 }}
